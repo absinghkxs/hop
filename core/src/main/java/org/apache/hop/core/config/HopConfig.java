@@ -44,6 +44,7 @@ public class HopConfig extends ConfigFile implements IConfigFile {
 
   private HopConfig() {
     try {
+      System.out.println("HopConfig instance");
       this.configFilename = Const.HOP_CONFIG_FOLDER + Const.FILE_SEPARATOR + Const.HOP_CONFIG;
       readFromFile();
     } catch (Exception e) {

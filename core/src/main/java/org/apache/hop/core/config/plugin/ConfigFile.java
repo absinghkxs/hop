@@ -54,11 +54,18 @@ public abstract class ConfigFile implements IConfigFile {
 
   public void readFromFile() throws HopException {
     try {
+      var fromFatJar = getClass().getResource("/" + Const.HOP_CONFIG);
+      System.out.println("fromFatJar: " + fromFatJar);
+      Map<String, Object> otherMap = new HashMap<String, Object>();
+      if (fromFatJar != null) {
+        otherMap = new ConfigFileSerializer().readFromFile(fromFatJar.getFile());
+      }
       if (new File(getConfigFilename()).exists()) {
         // Let's write to the file
         //
         this.serializer = new ConfigFileSerializer();
-      } else {
+      }
+      else {
         boolean createWhenMissing =
             "Y".equalsIgnoreCase(System.getProperty(Const.HOP_AUTO_CREATE_CONFIG, "N"));
         if (createWhenMissing) {
@@ -73,6 +80,11 @@ public abstract class ConfigFile implements IConfigFile {
         }
       }
       configMap = serializer.readFromFile(getConfigFilename());
+      System.out.println("otherMap: " + otherMap);
+      if(!otherMap.isEmpty()) {
+        configMap.putAll(otherMap);
+        saveToFile();
+      }
     } catch (Exception e) {
       throw new HopException("Unable to read config file '" + getConfigFilename() + "'", e);
     }

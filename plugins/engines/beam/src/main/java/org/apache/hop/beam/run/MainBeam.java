@@ -100,7 +100,7 @@ public class MainBeam {
           new SerializableMetadataProvider(metadataJson);
 
       // Load the pipeline run configuration from this metadata provider:
-      //
+
       IHopMetadataSerializer<PipelineRunConfiguration> serializer =
           metadataProvider.getSerializer(PipelineRunConfiguration.class);
       if (!serializer.exists(runConfigName)) {

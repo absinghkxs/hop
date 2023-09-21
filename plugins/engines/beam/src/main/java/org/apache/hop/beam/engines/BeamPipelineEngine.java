@@ -21,7 +21,10 @@ import org.apache.beam.runners.core.metrics.DefaultMetricResults;
 import org.apache.beam.runners.dataflow.DataflowRunner;
 import org.apache.beam.runners.direct.DirectRunner;
 import org.apache.beam.runners.flink.FlinkRunner;
+import org.apache.beam.runners.spark.SparkContextOptions;
+import org.apache.beam.runners.spark.SparkPipelineOptions;
 import org.apache.beam.runners.spark.SparkRunner;
+import org.apache.beam.runners.spark.translation.SparkContextFactory;
 import org.apache.beam.sdk.PipelineResult;
 import org.apache.beam.sdk.io.FileSystems;
 import org.apache.beam.sdk.metrics.MetricQueryResults;
@@ -77,6 +80,8 @@ import org.apache.hop.pipeline.engine.IPipelineEngine;
 import org.apache.hop.pipeline.engine.PipelineEngineCapabilities;
 import org.apache.hop.workflow.WorkflowMeta;
 import org.apache.hop.workflow.engine.IWorkflowEngine;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.joda.time.Duration;
 
 import java.util.ArrayList;
@@ -310,10 +315,16 @@ public abstract class BeamPipelineEngine extends Variables
         case DataFlow:
           return DataflowRunner.fromOptions(pipeline.getOptions()).run(pipeline);
         case Spark:
-          return SparkRunner.fromOptions(pipeline.getOptions()).run(pipeline);
+          JavaSparkContext databricksContext = JavaSparkContext.fromSparkContext(SparkContext.getOrCreate());
+          SparkContextFactory.setProvidedSparkContext(databricksContext);
+          var opts = pipeline.getOptions()
+                  .as(HopSparkPipelineExecutionOptions.class);
+          opts.setUsesProvidedSparkContext(true);
+          opts.setProvidedSparkContext(databricksContext);
+          return SparkRunner.fromOptions(opts).run(pipeline);
         default:
           throw new HopException(
-              "Execution on runner '" + runnerType.name() + "' is not supported yet.");
+              "Execution on runner '" + runnerType.name() + "' is cd as not supported yet.");
       }
     } catch (Throwable e) {
       throw new HopException("Error executing pipeline with runner " + runnerType.name(), e);

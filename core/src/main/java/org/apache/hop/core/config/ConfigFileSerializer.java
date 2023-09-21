@@ -20,6 +20,7 @@ package org.apache.hop.core.config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.hop.core.Const;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.json.HopJson;
 import org.apache.hop.core.vfs.HopVfs;
@@ -76,21 +77,32 @@ public class ConfigFileSerializer implements IHopConfigSerializer {
   @Override
   public Map<String, Object> readFromFile(String filename) throws HopException {
     try {
-      FileObject file = HopVfs.getFileObject(filename);
-      if (!file.exists()) {
-        // Just an empty config map.
-        //
-        return new HashMap<>();
-      }
       ObjectMapper objectMapper = HopJson.newMapper();
       TypeReference<HashMap<String, Object>> typeRef =
-          new TypeReference<HashMap<String, Object>>() {};
-      try (InputStream inputStream = HopVfs.getInputStream(file)) {
-        HashMap<String, Object> configMap = objectMapper.readValue(inputStream, typeRef);
-        return configMap;
+              new TypeReference<HashMap<String, Object>>() {
+              };
+      System.out.println("inside filename: " + filename);
+      if (filename.contains("jar")) {
+        try (InputStream inputStream = getClass().getResourceAsStream("/" + Const.HOP_CONFIG)) {
+          HashMap<String, Object> configMap = objectMapper.readValue(inputStream, typeRef);
+          System.out.println("map : " + configMap);
+          return configMap;
+        }
+      } else {
+        FileObject file = HopVfs.getFileObject(filename);
+        if (!file.exists()) {
+          // Just an empty config map.
+          //
+          return new HashMap<>();
+        }
+        try (InputStream inputStream = HopVfs.getInputStream(file)) {
+          HashMap<String, Object> configMap = objectMapper.readValue(inputStream, typeRef);
+          return configMap;
+        }
       }
     } catch (Exception e) {
       throw new HopException("Error reading Hop configuration file " + filename, e);
     }
   }
+
 }

@@ -238,6 +238,8 @@ public class BeamSparkPipelineRunConfiguration extends BeamPipelineRunConfigurat
       options.setAppName(resolve(getSparkAppName()));
     }
 
+    options.setUsesProvidedSparkContext(true);
+
     return options;
   }
 

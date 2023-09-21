@@ -18,7 +18,9 @@
 package org.apache.hop.beam.pipeline.fatjar;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.hop.config.HopConfig;
 import org.apache.hop.core.Const;
+import org.apache.hop.core.config.plugin.ConfigFile;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.logging.ILogChannel;
 import org.apache.hop.core.plugins.JarCache;
@@ -257,6 +259,20 @@ public class FatJarBuilder {
         IndexWriter indexWriter = new IndexWriter(zipOutputStream);
         indexWriter.write(indexer.complete());
         zipOutputStream.closeEntry();
+
+        // Add Hop-Config
+        //
+        log.logBasic("Adding Hop config");
+        zipOutputStream.putNextEntry(new ZipEntry("hop-config.json"));
+        File configFile = new File(Const.HOP_CONFIG_FOLDER + Const.FILE_SEPARATOR + Const.HOP_CONFIG);
+        var fis = new FileInputStream(configFile);
+        byte[] buffer2 = new byte[1024];
+        int length;
+        while ((length = fis.read(buffer2)) > 0) {
+          zipOutputStream.write(buffer2, 0, length);
+        }
+        zipOutputStream.closeEntry();
+        fis.close();
       }
     } catch (Exception e) {
       throw new HopException("Unable to build far jar file '" + realTargetJarFile + "'", e);

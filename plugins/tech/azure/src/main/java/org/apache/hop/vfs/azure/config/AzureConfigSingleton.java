@@ -36,6 +36,7 @@ public class AzureConfigSingleton {
     //
     Object configObject =
         HopConfig.getInstance().getConfigMap().get(AzureConfig.HOP_CONFIG_AZURE_CONFIG_KEY);
+    System.out.println("configObject: " + configObject);
     if (configObject == null) {
       azureConfig = new AzureConfig();
     } else {
